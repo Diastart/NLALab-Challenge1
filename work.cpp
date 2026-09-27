@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 			{
 				coo_row.push_back(i);
 				coo_col.push_back(j);
-				coo_val.push_back(d == 0 ? 4. : 1.);
+				coo_val.push_back(d == 0 ? 4.0/12.0 : 1.0/12.0);
 			}
 		}
 	}

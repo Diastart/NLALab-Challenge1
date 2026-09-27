@@ -1,6 +1,8 @@
 #include <Eigen/Dense>
 #include <iostream>
 #include <cstdlib>
+#include <vector>
+#include <algorithm>
 
 // from https://github.com/nothings/stb/tree/master
 #define STB_IMAGE_IMPLEMENTATION
@@ -80,6 +82,59 @@ int main(int argc, char *argv[])
 	VectorXd w = C.reshaped();
 
 	std::cout << "The Euclidean norm of v: " << v.norm() << std::endl;
+
+	int m = A.rows();
+	int n = A.cols();
+
+	// A1 is (m*n)x(m*n) with at most 9 nonzeros per row: store it in COO format
+	// (three parallel arrays: row index, column index, value) instead of dense
+	int N = m * n;
+	std::vector<int> coo_row, coo_col;
+	std::vector<double> coo_val;
+	coo_row.reserve(9 * N);
+	coo_col.reserve(9 * N);
+	coo_val.reserve(9 * N);
+
+	const int offsets[] = {0, 1, -1, n, -n, n + 1, n - 1, -n + 1, -n - 1};
+	for (int i = 0; i < N; ++i)
+	{
+		for (int d : offsets)
+		{
+			int j = i + d;
+			if (j >= 0 && j < N)
+			{
+				coo_row.push_back(i);
+				coo_col.push_back(j);
+				coo_val.push_back(d == 0 ? 4. : 1.);
+			}
+		}
+	}
+
+	std::cout << "A1 size: " << N << "x" << N
+			  << ", nonzeros: " << coo_val.size() << std::endl;
+
+	// matrix-vector product g = A1 * w directly from the COO triplets
+	VectorXd g = VectorXd::Zero(N);
+	for (size_t k = 0; k < coo_val.size(); ++k)
+		g(coo_row[k]) += coo_val[k] * w(coo_col[k]);
+
+	MatrixXd G = g.reshaped(m, n);
+	
+	Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image2(m, n);
+		grayscale_image2 = G.unaryExpr([](double val) -> unsigned char {
+			return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+		});
+
+	const std::string output_image_path2 = "task5.png";
+	if (stbi_write_png(output_image_path2.c_str(), width, height, 1,
+						grayscale_image2.data(), width) == 0) {
+		std::cerr << "Error: Could not save grayscale image" << std::endl;
+
+		return 1;
+	}
+
+	std::cout << "Grayscale image saved to " << output_image_path2 << std::endl;
+	
 
 	return 0;
 }

@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 	std::vector<Eigen::Triplet<double>> triplets;
 	triplets.reserve(9*size);
 	
-	double convolution_values[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+	double convolution_values[9] = {1.0/12, 1.0/12, 1.0/12, 1.0/12, 4.0/12, 1.0/12, 1.0/12, 1.0/12, 1.0/12};
 
 	for (int i = 0; i < size; ++i) {
     	int c = i % m;

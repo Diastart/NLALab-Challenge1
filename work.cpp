@@ -117,6 +117,8 @@ int main(int argc, char *argv[])
 	Eigen::SparseMatrix<double> A1(size, size);
 	A1.setFromTriplets(triplets.begin(), triplets.end());
 
+	std::cout << "Number of non-zero entries in A1: " << A1.nonZeros() << std::endl;
+
 
     //------------------------Challenge 1 Task 5----------------------
 

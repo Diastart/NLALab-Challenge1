@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 			return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
 		});
 
-	const std::string output_image_path = "noisy_deer.png";
+	const std::string output_image_path = "Task2.png";
 	if (stbi_write_png(output_image_path.c_str(), width, height, 1,
 						grayscale_image.data(), width) == 0) {
 		std::cerr << "Error: Could not save grayscale image" << std::endl;
@@ -119,18 +119,17 @@ int main(int argc, char *argv[])
 
 	std::cout << "Number of non-zero entries in A1: " << A1.nonZeros() << std::endl;
 
-
     //------------------------Challenge 1 Task 5----------------------
 
 	VectorXd g1 = A1*w;
 	MatrixXd G = g1.reshaped(n, m);
 
-	Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image2(m, n);
+	Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image2(n, m);
 	grayscale_image2 = G.unaryExpr([](double val) -> unsigned char {
 		return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
 	});
 
-	const std::string output_image_path2 = "task5.png";
+	const std::string output_image_path2 = "Task5.png";
 	if (stbi_write_png(output_image_path2.c_str(), width, height, 1,
 						grayscale_image2.data(), width) == 0) {
 		std::cerr << "Error: Could not save grayscale image" << std::endl;

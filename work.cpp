@@ -1,8 +1,10 @@
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
 #include <iostream>
 #include <cstdlib>
 #include <vector>
 #include <algorithm>
+typedef Eigen::Triplet<double> T;
 
 // from https://github.com/nothings/stb/tree/master
 #define STB_IMAGE_IMPLEMENTATION
@@ -83,8 +85,58 @@ int main(int argc, char *argv[])
 
 	std::cout << "The Euclidean norm of v: " << v.norm() << std::endl;
 
-	int m = A.rows();
-	int n = A.cols();
+	int n = A.rows();
+	int m = A.cols();
+
+
+	// -------------------------Challenge1 Task4------------------------------
+
+
+	int size = n*m;
+	std::vector<Eigen::Triplet<double>> triplets;
+	triplets.reserve(9*size);
+	
+	double convolution_values[9] = {-1, 0, 1, -2, 0, 2, -1, 0, 1};
+
+	for (int i = 0; i < size; ++i) {
+    	int c = i % m;
+	    bool L = c > 0, R = c < m-1;      // column neighbors exist
+    	bool U = i >= m, D = i < size-m;  // row neighbors exist
+
+	    triplets.emplace_back(i, i, convolution_values[4]);
+    	if (R)     triplets.emplace_back(i, i+1,  convolution_values[5]);
+	    if (L)     triplets.emplace_back(i, i-1,   convolution_values[3]);
+    	if (D)     triplets.emplace_back(i, i+m,   convolution_values[7]);
+	    if (U)     triplets.emplace_back(i, i-m,   convolution_values[1]);
+    	if (D&&R)  triplets.emplace_back(i, i+m+1, convolution_values[8]);
+	    if (D&&L)  triplets.emplace_back(i, i+m-1, convolution_values[6]);
+    	if (U&&R)  triplets.emplace_back(i, i-m+1, convolution_values[2]);
+	    if (U&&L)  triplets.emplace_back(i, i-m-1, convolution_values[0]);
+	}
+
+	Eigen::SparseMatrix<double> A1(size, size);
+	A1.setFromTriplets(triplets.begin(), triplets.end());
+
+
+    //------------------------Challenge 1 Task 5----------------------
+
+	VectorXd g1 = A1*w;
+	MatrixXd G = g1.reshaped(n, m);
+
+	Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image2(m, n);
+	grayscale_image2 = G.unaryExpr([](double val) -> unsigned char {
+		return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+	});
+
+	const std::string output_image_path2 = "task5.png";
+	if (stbi_write_png(output_image_path2.c_str(), width, height, 1,
+						grayscale_image2.data(), width) == 0) {
+		std::cerr << "Error: Could not save grayscale image" << std::endl;
+		
+	}	
+	//---------------------------------------------------------------
+
+	/* Claude Code
 
 	// A1 is (m*n)x(m*n) with at most 9 nonzeros per row: store it in COO format
 	// (three parallel arrays: row index, column index, value) instead of dense
@@ -120,6 +172,8 @@ int main(int argc, char *argv[])
 
 	MatrixXd G = g.reshaped(m, n);
 	
+	MatrixXd G = g.reshaped(m, n);
+	
 	Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image2(m, n);
 		grayscale_image2 = G.unaryExpr([](double val) -> unsigned char {
 			return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
@@ -134,7 +188,12 @@ int main(int argc, char *argv[])
 	}
 
 	std::cout << "Grayscale image saved to " << output_image_path2 << std::endl;
-	
 
+		return 1;
+	}
+
+	std::cout << "Grayscale image saved to " << output_image_path2 << std::endl;
+	
+*/
 	return 0;
 }

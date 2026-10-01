@@ -14,6 +14,37 @@ typedef Eigen::Triplet<double> T;
 
 using namespace Eigen;
 
+Eigen::SparseMatrix<double> buildConvolutionMatrix(int n, int m, const double convolution_values[9])
+{
+    int size = n * m;
+    std::vector<Eigen::Triplet<double>> triplets;
+    triplets.reserve(9 * size);
+
+    for (int i = 0; i < size; ++i)
+    {
+        int c = i % m;
+        bool L = c > 0;
+        bool R = c < m - 1;
+        bool U = i >= m;
+        bool D = i < size - m;
+
+        triplets.emplace_back(i, i, convolution_values[4]);
+        if (R) triplets.emplace_back(i, i + 1, convolution_values[5]);
+        if (L) triplets.emplace_back(i, i - 1, convolution_values[3]);
+        if (D) triplets.emplace_back(i, i + m, convolution_values[7]);
+        if (U) triplets.emplace_back(i, i - m, convolution_values[1]);
+        if (D && R) triplets.emplace_back(i, i + m + 1, convolution_values[8]);
+        if (D && L) triplets.emplace_back(i, i + m - 1, convolution_values[6]);
+        if (U && R) triplets.emplace_back(i, i - m + 1, convolution_values[2]);
+        if (U && L) triplets.emplace_back(i, i - m - 1, convolution_values[0]);
+    }
+
+    Eigen::SparseMatrix<double> M(size, size);
+    M.setFromTriplets(triplets.begin(), triplets.end());
+
+    return M;
+}
+
 int main(int argc, char *argv[])
 {
 	// -------------------------Challenge1 Task1-----------------------------------
@@ -91,31 +122,9 @@ int main(int argc, char *argv[])
 
 	// -------------------------Challenge1 Task4------------------------------
 
-
-	int size = n*m;
-	std::vector<Eigen::Triplet<double>> triplets;
-	triplets.reserve(9*size);
-	
 	double convolution_values[9] = {1.0/12, 1.0/12, 1.0/12, 1.0/12, 4.0/12, 1.0/12, 1.0/12, 1.0/12, 1.0/12};
 
-	for (int i = 0; i < size; ++i) {
-    	int c = i % m;
-	    bool L = c > 0, R = c < m-1;      // column neighbors exist
-    	bool U = i >= m, D = i < size-m;  // row neighbors exist
-
-	    triplets.emplace_back(i, i, convolution_values[4]);
-    	if (R)     triplets.emplace_back(i, i+1,  convolution_values[5]);
-	    if (L)     triplets.emplace_back(i, i-1,   convolution_values[3]);
-    	if (D)     triplets.emplace_back(i, i+m,   convolution_values[7]);
-	    if (U)     triplets.emplace_back(i, i-m,   convolution_values[1]);
-    	if (D&&R)  triplets.emplace_back(i, i+m+1, convolution_values[8]);
-	    if (D&&L)  triplets.emplace_back(i, i+m-1, convolution_values[6]);
-    	if (U&&R)  triplets.emplace_back(i, i-m+1, convolution_values[2]);
-	    if (U&&L)  triplets.emplace_back(i, i-m-1, convolution_values[0]);
-	}
-
-	Eigen::SparseMatrix<double> A1(size, size);
-	A1.setFromTriplets(triplets.begin(), triplets.end());
+	SparseMatrix<double> A1 = buildConvolutionMatrix(n, m, convolution_values);
 
 	std::cout << "Number of non-zero entries in A1: " << A1.nonZeros() << std::endl;
 
@@ -134,7 +143,7 @@ int main(int argc, char *argv[])
 						grayscale_image2.data(), width) == 0) {
 		std::cerr << "Error: Could not save grayscale image" << std::endl;
 		
-	}	
+	}
 	//---------------------------------------------------------------
 
 	/* Claude Code

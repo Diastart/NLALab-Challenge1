@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
 	std::cout << "Number of non-zero entries in A1: " << A1.nonZeros() << std::endl;
 
-    //------------------------Challenge 1 Task 5----------------------
+    //------------------------Challenge1 Task5----------------------
 
 	VectorXd g1 = A1*w;
 	MatrixXd G = g1.reshaped(n, m);
@@ -142,9 +142,34 @@ int main(int argc, char *argv[])
 	if (stbi_write_png(output_image_path2.c_str(), width, height, 1,
 						grayscale_image2.data(), width) == 0) {
 		std::cerr << "Error: Could not save grayscale image" << std::endl;
-		
 	}
-	//---------------------------------------------------------------
+
+	//-------------------------Challenge1 Task 6----------------------
+
+	double convolution_values1[9] = {0.0, -3.0, 0.0, -1.0, 9.0, -3.0, 0.0, -1.0, 0.0};
+
+	SparseMatrix<double> A2 = buildConvolutionMatrix(n, m, convolution_values1);
+
+	std::cout << "Number of non-zero entries in A2: " << A2.nonZeros() << std::endl;
+
+	if (A.isApprox(A.transpose())) std::cout << "The matirx A2 is symmetric" << std::endl;
+	else std::cout << "The matirx A2 is not symmetric" << std::endl;
+
+	//-------------------------Challenge1 Task7----------------------
+	VectorXd f1 = A2*v;
+	MatrixXd F = f1.reshaped(n, m);
+
+	Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image21(n, m);
+	grayscale_image21 = F.unaryExpr([](double val) -> unsigned char {
+		return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
+	});
+
+	const std::string output_image_path21 = "Task7.png";
+	if (stbi_write_png(output_image_path21.c_str(), width, height, 1,
+						grayscale_image21.data(), width) == 0) {
+		std::cerr << "Error: Could not save grayscale image" << std::endl;
+	}
+
 
 	/* Claude Code
 

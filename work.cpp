@@ -29,14 +29,14 @@ Eigen::SparseMatrix<double> buildConvolutionMatrix(int n, int m, const double co
         bool D = i < size - m;
 
         triplets.emplace_back(i, i, convolution_values[4]);
-        if (R) triplets.emplace_back(i, i + 1, convolution_values[5]);
-        if (L) triplets.emplace_back(i, i - 1, convolution_values[3]);
-        if (D) triplets.emplace_back(i, i + m, convolution_values[7]);
-        if (U) triplets.emplace_back(i, i - m, convolution_values[1]);
-        if (D && R) triplets.emplace_back(i, i + m + 1, convolution_values[8]);
-        if (D && L) triplets.emplace_back(i, i + m - 1, convolution_values[6]);
-        if (U && R) triplets.emplace_back(i, i - m + 1, convolution_values[2]);
-        if (U && L) triplets.emplace_back(i, i - m - 1, convolution_values[0]);
+        if ((R) && convolution_values[5] != 0) triplets.emplace_back(i, i + 1, convolution_values[5]);
+        if ((L) && convolution_values[3] != 0) triplets.emplace_back(i, i - 1, convolution_values[3]);
+        if ((D) && convolution_values[7] != 0) triplets.emplace_back(i, i + m, convolution_values[7]);
+        if ((U) && convolution_values[1] != 0) triplets.emplace_back(i, i - m, convolution_values[1]);
+        if ((D && R) && convolution_values[8] != 0) triplets.emplace_back(i, i + m + 1, convolution_values[8]);
+        if ((D && L) && convolution_values[6] != 0) triplets.emplace_back(i, i + m - 1, convolution_values[6]);
+        if ((U && R) && convolution_values[2] != 0) triplets.emplace_back(i, i - m + 1, convolution_values[2]);
+        if ((U && L) && convolution_values[0] != 0) triplets.emplace_back(i, i - m - 1, convolution_values[0]);
     }
 
     Eigen::SparseMatrix<double> M(size, size);

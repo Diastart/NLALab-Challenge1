@@ -21,6 +21,10 @@ using ImageMatrix =
 
 using ImageMap = Eigen::Map<ImageMatrix>;
 
+using Vector = Eigen::VectorXd;
+
+using Eigen::RowMajor;
+
 //HElPER FUNCTIONS START----------------------
 ImageMatrix toImage(const Matrix& matrix)
 {
@@ -40,7 +44,7 @@ bool saveImage(const std::string& path, const ImageMatrix& image, int width, int
 
 
 
-
+/*										CUT											*/
 
 
 
@@ -52,6 +56,8 @@ int	main(int argc, char *argv[])
 	unsigned char *image_data;
 	Matrix A;
 	Matrix C;
+	Vector v;
+	Vector w;
 
 	if (argc < 2){ return std::cerr << "Usage: " << argv[0] << " <image_path>\n", 1;}
 
@@ -72,4 +78,12 @@ int	main(int argc, char *argv[])
 	if (!saveImage("noisy_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "Noisy image saved to noisy_image.png" << std::endl;
 	//TASK 2 END------------------------------------------------------------------------------------------------------
+
+	//TASK 3 START----------------------------------------------------
+	v = A.reshaped<RowMajor>();
+	w = C.reshaped<RowMajor>();
+	std::cout << "Size of v: " << v.size() << std::endl;
+	std::cout << "Size of w: " << w.size() << std::endl;
+	std::cout << "The Euclidean norm of v: " << v.norm() << std::endl;
+	//TASK 3 END------------------------------------------------------
 }

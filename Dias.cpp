@@ -90,8 +90,12 @@ int	main(int argc, char *argv[])
 	unsigned char *image_data;
 	Matrix A;
 	Matrix C;
+	ImageMatrix image;
 	Vector v;
 	Vector w;
+	SparseMatrix A1;
+	Vector g1;
+	Matrix G1;
 
 	if (argc < 2){ return std::cerr << "Usage: " << argv[0] << " <image_path>\n", 1;}
 	//TASK 1 START--------------------------------------------------------------------------
@@ -103,7 +107,7 @@ int	main(int argc, char *argv[])
 	//TASK 1 END-----------------------------------------------------------------------------
 	//TASK 2 START----------------------------------------------------------------------------------------------------
 	C = A + 50.0 * Matrix::Random(height, width);
-	ImageMatrix image = toImage(C);
+	image = toImage(C);
 	if (!saveImage("noisy_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "Noisy image saved to noisy_image.png" << std::endl;
 	//TASK 2 END------------------------------------------------------------------------------------------------------
@@ -115,9 +119,14 @@ int	main(int argc, char *argv[])
 	std::cout << "The Euclidean norm of v: " << v.norm() << std::endl;
 	//TASK 3 END------------------------------------------------------
 	//TASK 4 START------------------------------------------------------------------
-	SparseMatrix A1 = getSparseMatrixFromConv(A.rows(), A.cols(), hav1);
+	A1 = getSparseMatrixFromConv(A.rows(), A.cols(), hav1);
 	std::cout << "Number of non-zero entries in A1: " << A1.nonZeros() << std::endl;
 	//TASK 4 END--------------------------------------------------------------------
-
+	//TASK 5 START------------------------------------------------------------------------------------------------------
+	g1 = A1*w;
+	G1 = g1.reshaped<RowMajor>(A.rows(), A.cols());
+	image = toImage(G1);
+	if (!saveImage("smoothed_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	return 0;
+	//TASK 5 END--------------------------------------------------------------------------------------------------------
 }

@@ -5,6 +5,9 @@
 #include <vector>
 #include <algorithm>
 #include <unsupported/Eigen/SparseExtra>
+#include <fstream>
+#include <iomanip>
+#include <stdexcept>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -68,11 +71,55 @@ SparseMatrix getSparseMatrixFromConv(int n, int m, const double convolution[9])
 
 	return M;
 }
+
+
+bool saveLISVector(const Vector& v, const std::string& path)
+{
+	std::ofstream out(path);
+
+	if (!out)
+		return false;
+
+	out << "%%MatrixMarket vector coordinate real general\n";
+	out << v.size() << '\n';
+
+	for (int i = 0; i < v.size(); ++i)
+		out << i + 1 << ' ' << std::scientific << std::setprecision(16)
+			<< v(i) << '\n';
+
+	return true;
+}
+
+
+Vector loadLISVector(const std::string& path)
+{
+	std::ifstream in(path);
+
+	if (!in)
+		throw std::runtime_error("Could not open " + path);
+
+	std::string line;
+	std::getline(in, line); // MatrixMarket header
+
+	int size;
+	in >> size;
+
+	Vector x(size);
+
+	int index;
+	double value;
+
+	while (in >> index >> value)
+		x(index - 1) = value;
+
+	return x;
+}
 //HELPER FUNCTIONS END------------------------
 
 //CONVOLUTIONS START----------------------------------------------------------------------
 double hav1[9] = {1.0/12, 1.0/12, 1.0/12, 1.0/12, 4.0/12, 1.0/12, 1.0/12, 1.0/12, 1.0/12};
 double hsh1[9] = {0.0, -3.0, 0.0, -1.0, 9.0, -3.0, 0.0, -1.0, 0.0};
+double hed2[9] = {-1.0, 0.0, 1.0, -2.0, 0.0, 2.0, -1.0, 0.0, 1.0};
 //CONVOLUTIONS END------------------------------------------------------------------------
 
 
@@ -87,19 +134,24 @@ double hsh1[9] = {0.0, -3.0, 0.0, -1.0, 9.0, -3.0, 0.0, -1.0, 0.0};
 
 int	main(int argc, char *argv[])
 {
-	int width, height, channels;
-	unsigned char *image_data;
-	Matrix A;
-	Matrix C;
-	ImageMatrix image;
-	Vector v;
-	Vector w;
-	SparseMatrix A1;
-	Vector g1;
-	Matrix G1;
-	Vector g2;
-	Matrix G2;
-	SparseMatrix A2;
+	int				width, height, channels;
+	unsigned char	*image_data;
+	Matrix			A;
+	Matrix			C;
+	ImageMatrix		image;
+	Vector			v;
+	Vector			w;
+	SparseMatrix	A1;
+	Vector			g1;
+	Matrix			G1;
+	Vector			g2;
+	Matrix			G2;
+	SparseMatrix	A2;
+	Vector			x;
+	Matrix			X;
+	SparseMatrix	A3;
+	Vector			g3;
+	Matrix			G3;
 
 	if (argc < 2){ return std::cerr << "Usage: " << argv[0] << " <image_path>\n", 1;}
 	//TASK 1 START--------------------------------------------------------------------------
@@ -145,5 +197,28 @@ int	main(int argc, char *argv[])
 	if (!saveImage("sharpened_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "Sharpened image saved to sharpened_image.png" << std::endl;
 	//TASK 7 END---------------------------------------------------------------------------------------------------------
+	//TASK 8 START------------------------------------------------------------
+	Eigen::saveMarket(A2, "./A2.mtx");
+	saveLISVector(w, "w.mtx");
+	/*		./test1 A2.mtx w.mtx x.mtx -i bicgstab -p ilu -tol 1e-12		*/
+	//TASK 8 END--------------------------------------------------------------
+	//TASK 9 START------------------------------------------------------------------------------------------------------
+	x = loadLISVector("x.mtx");
+	X = x.reshaped<RowMajor>(A.rows(), A.cols());
+	image = toImage(X);
+	if (!saveImage("solution_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	std::cout << "Solution image saved to solution_image.png" << std::endl;
+	//TASK 9 END--------------------------------------------------------------------------------------------------------
+	//TASK 10 START-------------------------------------------------------------------------------------
+	A3 = getSparseMatrixFromConv(A.rows(), A.cols(), hed2);
+	std::cout << (A3.isApprox(A3.transpose()) ? "A3 is symmetric" : "A3 is NOT symmetric") << std::endl;
+	//TASK 10 END---------------------------------------------------------------------------------------
+	//TASK 11 START---
+	g3 = A3*v;
+	G3 = g3.reshaped<RowMajor>(A.rows(), A.cols());
+	image = toImage(G3);
+	if (!saveImage("edge_detected_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	std::cout << "Edge dectected image saved to edge_detected_image.png" << std::endl;
+	//TASK 11 END--
 	return 0;
 }

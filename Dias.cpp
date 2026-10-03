@@ -72,6 +72,7 @@ SparseMatrix getSparseMatrixFromConv(int n, int m, const double convolution[9])
 
 //CONVOLUTIONS START----------------------------------------------------------------------
 double hav1[9] = {1.0/12, 1.0/12, 1.0/12, 1.0/12, 4.0/12, 1.0/12, 1.0/12, 1.0/12, 1.0/12};
+double hsh1[9] = {0.0, -3.0, 0.0, -1.0, 9.0, -3.0, 0.0, -1.0, 0.0};
 //CONVOLUTIONS END------------------------------------------------------------------------
 
 
@@ -96,6 +97,9 @@ int	main(int argc, char *argv[])
 	SparseMatrix A1;
 	Vector g1;
 	Matrix G1;
+	Vector g2;
+	Matrix G2;
+	SparseMatrix A2;
 
 	if (argc < 2){ return std::cerr << "Usage: " << argv[0] << " <image_path>\n", 1;}
 	//TASK 1 START--------------------------------------------------------------------------
@@ -127,6 +131,19 @@ int	main(int argc, char *argv[])
 	G1 = g1.reshaped<RowMajor>(A.rows(), A.cols());
 	image = toImage(G1);
 	if (!saveImage("smoothed_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
-	return 0;
+	std::cout << "Smoothed image saved to smoothed_image.png" << std::endl;
 	//TASK 5 END--------------------------------------------------------------------------------------------------------
+	//TASK 6 START--------------------------------------------------------------------------------------
+	A2 = getSparseMatrixFromConv(A.rows(), A.cols(), hsh1);
+	std::cout << "Number of non-zero entries in A2: " << A2.nonZeros() << std::endl;
+	std::cout << (A2.isApprox(A2.transpose()) ? "A2 is symmetric" : "A2 is NOT symmetric") << std::endl;
+	//TASK 6 END----------------------------------------------------------------------------------------
+	//TASK 7 START-------------------------------------------------------------------------------------------------------
+	g2 = A2*v;
+	G2 = g2.reshaped<RowMajor>(A.rows(), A.cols());
+	image = toImage(G2);
+	if (!saveImage("sharpened_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	std::cout << "Sharpened image saved to sharpened_image.png" << std::endl;
+	//TASK 7 END---------------------------------------------------------------------------------------------------------
+	return 0;
 }

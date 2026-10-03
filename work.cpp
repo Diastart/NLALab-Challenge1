@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <vector>
 #include <algorithm>
+#include <unsupported/Eigen/SparseExtra>
 typedef Eigen::Triplet<double> T;
 
 // from https://github.com/nothings/stb/tree/master
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
 			  << channels << " channels in the file." << std::endl;
 	
 	// -------------------------Challenge1 Task2-----------------------------------
-	 Eigen::MatrixXd A(height, width);
+	Eigen::MatrixXd A(height, width);
 
     for (int y = 0; y < height; ++y)
     {
@@ -111,8 +112,8 @@ int main(int argc, char *argv[])
 
 	// -------------------------Challenge1 Task3-----------------------------------
 
-	VectorXd v = A.reshaped();
-	VectorXd w = C.reshaped();
+	VectorXd v = A.reshaped<RowMajor>();
+	VectorXd w = C.reshaped<RowMajor>();
 
 	std::cout << "The Euclidean norm of v: " << v.norm() << std::endl;
 
@@ -131,7 +132,7 @@ int main(int argc, char *argv[])
     //------------------------Challenge1 Task5----------------------
 
 	VectorXd g1 = A1*w;
-	MatrixXd G = g1.reshaped(n, m);
+	MatrixXd G = g1.reshaped<RowMajor>(n, m);
 
 	Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image2(n, m);
 	grayscale_image2 = G.unaryExpr([](double val) -> unsigned char {
@@ -157,7 +158,7 @@ int main(int argc, char *argv[])
 
 	//-------------------------Challenge1 Task7----------------------
 	VectorXd f1 = A2*v;
-	MatrixXd F = f1.reshaped(n, m);
+	MatrixXd F = f1.reshaped<RowMajor>(n, m);
 
 	Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image21(n, m);
 	grayscale_image21 = F.unaryExpr([](double val) -> unsigned char {
@@ -171,6 +172,19 @@ int main(int argc, char *argv[])
 	}
 
 	//-------------------------Challenge1 Task8----------------------
+
+	Eigen::saveMarket(A2, "./A2.mtx");
+	// LIS expects the rhs in "vector coordinate" format, not the matrix format written by saveMarket
+	FILE* out = fopen("w.mtx", "w");
+	fprintf(out, "%%%%MatrixMarket vector coordinate real general\n");
+	fprintf(out, "%d\n", (int)w.size());
+	for (int i = 0; i < w.size(); ++i)
+		fprintf(out, "%d %.16e\n", i + 1, w(i));
+	fclose(out);
+
+
+	
+
 
 	//-------------------------Challenge1 Task9----------------------
 
@@ -186,7 +200,7 @@ int main(int argc, char *argv[])
 	//-------------------------Challenge1 Task11----------------------
 
 	VectorXd h1 = A3*v;
-	MatrixXd H = h1.reshaped(n, m);
+	MatrixXd H = h1.reshaped<RowMajor>(n, m);
 
 	Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image22(n, m);
 	grayscale_image22 = H.unaryExpr([](double val) -> unsigned char {
@@ -202,67 +216,5 @@ int main(int argc, char *argv[])
 	//-------------------------Challenge1 Task12----------------------
 
 	//-------------------------Challenge1 Task13----------------------
-
-
-
-	/* Claude Code
-
-	// A1 is (m*n)x(m*n) with at most 9 nonzeros per row: store it in COO format
-	// (three parallel arrays: row index, column index, value) instead of dense
-	int N = m * n;
-	std::vector<int> coo_row, coo_col;
-	std::vector<double> coo_val;
-	coo_row.reserve(9 * N);
-	coo_col.reserve(9 * N);
-	coo_val.reserve(9 * N);
-
-	const int offsets[] = {0, 1, -1, n, -n, n + 1, n - 1, -n + 1, -n - 1};
-	for (int i = 0; i < N; ++i)
-	{
-		for (int d : offsets)
-		{
-			int j = i + d;
-			if (j >= 0 && j < N)
-			{
-				coo_row.push_back(i);
-				coo_col.push_back(j);
-				coo_val.push_back(d == 0 ? 4.0/12.0 : 1.0/12.0);
-			}
-		}
-	}
-
-	std::cout << "A1 size: " << N << "x" << N
-			  << ", nonzeros: " << coo_val.size() << std::endl;
-
-	// matrix-vector product g = A1 * w directly from the COO triplets
-	VectorXd g = VectorXd::Zero(N);
-	for (size_t k = 0; k < coo_val.size(); ++k)
-		g(coo_row[k]) += coo_val[k] * w(coo_col[k]);
-
-	MatrixXd G = g.reshaped(m, n);
-	
-	MatrixXd G = g.reshaped(m, n);
-	
-	Matrix<unsigned char, Dynamic, Dynamic, RowMajor> grayscale_image2(m, n);
-		grayscale_image2 = G.unaryExpr([](double val) -> unsigned char {
-			return static_cast<unsigned char>(std::clamp(val, 0.0, 255.0));
-		});
-
-	const std::string output_image_path2 = "task5.png";
-	if (stbi_write_png(output_image_path2.c_str(), width, height, 1,
-						grayscale_image2.data(), width) == 0) {
-		std::cerr << "Error: Could not save grayscale image" << std::endl;
-
-		return 1;
-	}
-
-	std::cout << "Grayscale image saved to " << output_image_path2 << std::endl;
-
-		return 1;
-	}
-
-	std::cout << "Grayscale image saved to " << output_image_path2 << std::endl;
-	
-*/
 	return 0;
 }

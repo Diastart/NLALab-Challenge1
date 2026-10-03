@@ -1,3 +1,4 @@
+//INCLUDES AND DEFS START----------------
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <iostream>
@@ -8,12 +9,12 @@
 #include <fstream>
 #include <iomanip>
 #include <stdexcept>
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
-
+//INCLUDES AND DEFS END------------------
+//FOR CONVENIENCE START--------------------------------
 using Matrix = Eigen::MatrixXd;
 using ImageMatrix =
 			Eigen::Matrix<unsigned char,
@@ -25,8 +26,8 @@ using ImageMap = Eigen::Map<ImageMatrix>;
 using Vector = Eigen::VectorXd;
 using Eigen::RowMajor;
 using SparseMatrix = Eigen::SparseMatrix<double>;
-
-//HElPER FUNCTIONS START----------------------
+//FOR CONVENIENCE END--------------------------------
+//HELPER FUNCTIONS START--------------------------------------------------------------------
 ImageMatrix toImage(const Matrix& matrix)
 {
 	return matrix.unaryExpr([](double value) {
@@ -72,7 +73,6 @@ SparseMatrix getSparseMatrixFromConv(int n, int m, const double convolution[9])
 	return M;
 }
 
-
 bool saveLISVector(const Vector& v, const std::string& path)
 {
 	std::ofstream out(path);
@@ -89,7 +89,6 @@ bool saveLISVector(const Vector& v, const std::string& path)
 
 	return true;
 }
-
 
 Vector loadLISVector(const std::string& path)
 {
@@ -114,8 +113,7 @@ Vector loadLISVector(const std::string& path)
 
 	return x;
 }
-//HELPER FUNCTIONS END------------------------
-
+//HELPER FUNCTIONS END--------------------------------------------------------------------
 //CONVOLUTIONS START----------------------------------------------------------------------
 double hav1[9] = {1.0/12, 1.0/12, 1.0/12, 1.0/12, 4.0/12, 1.0/12, 1.0/12, 1.0/12, 1.0/12};
 double hsh1[9] = {0.0, -3.0, 0.0, -1.0, 9.0, -3.0, 0.0, -1.0, 0.0};
@@ -125,13 +123,7 @@ double hed2[9] = {-1.0, 0.0, 1.0, -2.0, 0.0, 2.0, -1.0, 0.0, 1.0};
 
 
 
-
-/*										CUT											*/
-
-
-
-
-
+/*		ACTUAL IMPORTANT CODE STARTS HERE	*/
 int	main(int argc, char *argv[])
 {
 	int				width, height, channels;
@@ -243,3 +235,4 @@ int	main(int argc, char *argv[])
 	//TASK 13 END---------------------------------------------------------------------------------------------------------
 	return 0;
 }
+/*		ACTUAL IMPORTANT CODE ENDS HERE	*/

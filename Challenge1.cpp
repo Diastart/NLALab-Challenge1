@@ -161,7 +161,7 @@ int	main(int argc, char *argv[])
 	//std::srand(0); TO SEE ON MONDAY, explicitly fix the seed to guarantee reproducibility
 	C = A + 50.0 * Matrix::Random(height, width);
 	image = toImage(C);
-	if (!saveImage("noisy_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	if (!saveImage("output_images/noisy_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "Noisy image saved to noisy_image.png" << std::endl;
 	//TASK 2 END------------------------------------------------------------------------------------------------------
 	//TASK 3 START----------------------------------------------------
@@ -179,7 +179,7 @@ int	main(int argc, char *argv[])
 	g1 = A1*w;
 	G1 = g1.reshaped<RowMajor>(A.rows(), A.cols());
 	image = toImage(G1);
-	if (!saveImage("smoothed_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	if (!saveImage("output_images/smoothed_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "Smoothed image saved to smoothed_image.png" << std::endl;
 	//TASK 5 END--------------------------------------------------------------------------------------------------------
 	//TASK 6 START--------------------------------------------------------------------------------------
@@ -191,22 +191,24 @@ int	main(int argc, char *argv[])
 	g2 = A2*v;
 	G2 = g2.reshaped<RowMajor>(A.rows(), A.cols());
 	image = toImage(G2);
-	if (!saveImage("sharpened_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	if (!saveImage("output_images/sharpened_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "Sharpened image saved to sharpened_image.png" << std::endl;
 	//TASK 7 END---------------------------------------------------------------------------------------------------------
 	//TASK 8 START------------------------------------------------------------
-	Eigen::saveMarket(A2, "./A2.mtx");
-	//if (!Eigen::saveMarket(A2, "./A2.mtx")){return std::cerr << "Error: Could not save A2.mtx\n", 1;} TO SEE ON MONDAY, I THINK THIS IS BETTER
-	saveLISVector(w, "w.mtx");
-	//if (!saveLISVector(w, "w.mtx")){return std::cerr << "Error: Could not save w.mtx\n", 1;} TO SEE ON MONDAY, I THINK THIS IS BETTER
-	/*		./test1 A2.mtx w.mtx x.mtx -i bicgstab -p ilu -tol 1e-12		*/
+	Eigen::saveMarket(A2, "output_data/A2.mtx");
+	//if (!Eigen::saveMarket(A2, "output_data/A2.mtx")){return std::cerr << "Error: Could not save A2.mtx\n", 1;} TO SEE ON MONDAY, I THINK THIS IS BETTER
+	saveLISVector(w, "output_data/w.mtx");
+	//if (!saveLISVector(w, "output_data/w.mtx")){return std::cerr << "Error: Could not save w.mtx\n", 1;} TO SEE ON MONDAY, I THINK THIS IS BETTER
+	/*		./test1 output_data/A2.mtx output_data/w.mtx output_data/x.mtx output_data/residual.txt -i bicgstab -p ilu -tol 1e-12		*/
+	int ret = std::system("./test1 output_data/A2.mtx output_data/w.mtx output_data/x.mtx output_data/residual.txt -i bicgstab -p ilu -tol 1e-12"); //TO SEE ON MONDAY, IT JUST COMPILES THE LIS LIBRARY AUTOMATICALLY
+	if(ret != 0){return std::cerr << "Error: LIS solver failed\n", 1;}
 	//TASK 8 END--------------------------------------------------------------
 	//TASK 9 START------------------------------------------------------------------------------------------------------
-	x = loadLISVector("x.mtx");
+	x = loadLISVector("output_data/x.mtx");
 	//if (x.size() != A.rows() * A.cols()){return std::cerr << "Error: x.mtx has wrong size\n", 1;} TO SEE ON MONDAY, CHECKING THE SIZE OF THE VECTOR IS A GOOD IDEA
 	X = x.reshaped<RowMajor>(A.rows(), A.cols());
 	image = toImage(X);
-	if (!saveImage("x_solution_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	if (!saveImage("output_images/x_solution_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "X solution image saved to x_solution_image.png" << std::endl;
 	//TASK 9 END--------------------------------------------------------------------------------------------------------
 	//TASK 10 START-------------------------------------------------------------------------------------
@@ -217,7 +219,7 @@ int	main(int argc, char *argv[])
 	g3 = A3*v;
 	G3 = g3.reshaped<RowMajor>(A.rows(), A.cols());
 	image = toImage(G3);
-	if (!saveImage("edge_detected_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	if (!saveImage("output_images/edge_detected_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "Edge dectected image saved to edge_detected_image.png" << std::endl;
 	//TASK 11 END------------------------------------------------------------------------------------------------------------
 	//TASK 12 START--------------------------------------------------------------------------
@@ -242,7 +244,7 @@ int	main(int argc, char *argv[])
 	//TASK 13 START-------------------------------------------------------------------------------------------------------
 	Y = y.reshaped<RowMajor>(A.rows(), A.cols());
 	image = toImage(Y);
-	if (!saveImage("y_solution_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	if (!saveImage("output_images/y_solution_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "Y solution image saved to y_solution_image.png" << std::endl;
 	//TASK 13 END---------------------------------------------------------------------------------------------------------
 	return 0;

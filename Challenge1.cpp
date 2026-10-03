@@ -104,6 +104,7 @@ Vector loadLISVector(const std::string& path)
 	in >> size;
 
 	Vector x(size);
+	//Vector x = Vector::Zero(size); TO SEE ON MONDAY, 
 
 	int index;
 	double value;
@@ -157,6 +158,7 @@ int	main(int argc, char *argv[])
 	std::cout << "Size of the matrix: " << height << "x" << width << std::endl;
 	//TASK 1 END-----------------------------------------------------------------------------
 	//TASK 2 START----------------------------------------------------------------------------------------------------
+	//std::srand(0); TO SEE ON MONDAY, explicitly fix the seed to guarantee reproducibility
 	C = A + 50.0 * Matrix::Random(height, width);
 	image = toImage(C);
 	if (!saveImage("noisy_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
@@ -194,11 +196,14 @@ int	main(int argc, char *argv[])
 	//TASK 7 END---------------------------------------------------------------------------------------------------------
 	//TASK 8 START------------------------------------------------------------
 	Eigen::saveMarket(A2, "./A2.mtx");
+	//if (!Eigen::saveMarket(A2, "./A2.mtx")){return std::cerr << "Error: Could not save A2.mtx\n", 1;} TO SEE ON MONDAY, I THINK THIS IS BETTER
 	saveLISVector(w, "w.mtx");
+	//if (!saveLISVector(w, "w.mtx")){return std::cerr << "Error: Could not save w.mtx\n", 1;} TO SEE ON MONDAY, I THINK THIS IS BETTER
 	/*		./test1 A2.mtx w.mtx x.mtx -i bicgstab -p ilu -tol 1e-12		*/
 	//TASK 8 END--------------------------------------------------------------
 	//TASK 9 START------------------------------------------------------------------------------------------------------
 	x = loadLISVector("x.mtx");
+	//if (x.size() != A.rows() * A.cols()){return std::cerr << "Error: x.mtx has wrong size\n", 1;} TO SEE ON MONDAY, CHECKING THE SIZE OF THE VECTOR IS A GOOD IDEA
 	X = x.reshaped<RowMajor>(A.rows(), A.cols());
 	image = toImage(X);
 	if (!saveImage("x_solution_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
@@ -226,6 +231,13 @@ int	main(int argc, char *argv[])
 	if (solver.info() != Eigen::Success){return std::cerr << "Solver failed\n", 1;}
 	std::cout << "Iterations: " << solver.iterations() << std::endl;
 	std::cout << "Final residual: " << solver.error() << std::endl;
+	// TO SEE ON MONDAY, UNCOMMENT THE FOLLOWING LINES TO BE MORE PRECISE ON CALCULATING THE RESIDUALS.
+	/*double residual = (A3M * y - w).norm();
+	double relative_residual = residual / w.norm();
+	std::cout << "Iterations: " << solver.iterations() << std::endl;
+	std::cout << "Solver error: " << solver.error() << std::endl;
+	std::cout << "Absolute residual: " << residual << std::endl;
+	std::cout << "Relative residual: " << relative_residual << std::endl;*/
 	//TASK 12 END----------------------------------------------------------------------------
 	//TASK 13 START-------------------------------------------------------------------------------------------------------
 	Y = y.reshaped<RowMajor>(A.rows(), A.cols());

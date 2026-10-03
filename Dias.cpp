@@ -152,6 +152,9 @@ int	main(int argc, char *argv[])
 	SparseMatrix	A3;
 	Vector			g3;
 	Matrix			G3;
+	SparseMatrix	A3M;
+	Vector			y;
+	Matrix			Y;
 
 	if (argc < 2){ return std::cerr << "Usage: " << argv[0] << " <image_path>\n", 1;}
 	//TASK 1 START--------------------------------------------------------------------------
@@ -206,19 +209,37 @@ int	main(int argc, char *argv[])
 	x = loadLISVector("x.mtx");
 	X = x.reshaped<RowMajor>(A.rows(), A.cols());
 	image = toImage(X);
-	if (!saveImage("solution_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
-	std::cout << "Solution image saved to solution_image.png" << std::endl;
+	if (!saveImage("x_solution_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	std::cout << "X solution image saved to x_solution_image.png" << std::endl;
 	//TASK 9 END--------------------------------------------------------------------------------------------------------
 	//TASK 10 START-------------------------------------------------------------------------------------
 	A3 = getSparseMatrixFromConv(A.rows(), A.cols(), hed2);
 	std::cout << (A3.isApprox(A3.transpose()) ? "A3 is symmetric" : "A3 is NOT symmetric") << std::endl;
 	//TASK 10 END---------------------------------------------------------------------------------------
-	//TASK 11 START---
+	//TASK 11 START----------------------------------------------------------------------------------------------------------
 	g3 = A3*v;
 	G3 = g3.reshaped<RowMajor>(A.rows(), A.cols());
 	image = toImage(G3);
 	if (!saveImage("edge_detected_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "Edge dectected image saved to edge_detected_image.png" << std::endl;
-	//TASK 11 END--
+	//TASK 11 END------------------------------------------------------------------------------------------------------------
+	//TASK 12 START--------------------------------------------------------------------------
+	A3M = A3;
+	A3M.diagonal().array() += 4.0;
+	Eigen::BiCGSTAB<SparseMatrix> solver;
+	solver.setTolerance(1e-10);
+	solver.compute(A3M);
+	if (solver.info() != Eigen::Success){return std::cerr << "Failed to decompose A3M\n", 1;}
+	y = solver.solve(w);
+	if (solver.info() != Eigen::Success){return std::cerr << "Solver failed\n", 1;}
+	std::cout << "Iterations: " << solver.iterations() << std::endl;
+	std::cout << "Final residual: " << solver.error() << std::endl;
+	//TASK 12 END----------------------------------------------------------------------------
+	//TASK 13 START-------------------------------------------------------------------------------------------------------
+	Y = y.reshaped<RowMajor>(A.rows(), A.cols());
+	image = toImage(Y);
+	if (!saveImage("y_solution_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
+	std::cout << "Y solution image saved to y_solution_image.png" << std::endl;
+	//TASK 13 END---------------------------------------------------------------------------------------------------------
 	return 0;
 }

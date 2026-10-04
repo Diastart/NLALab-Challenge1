@@ -160,6 +160,7 @@ int	main(int argc, char *argv[])
 	//TASK 2 START----------------------------------------------------------------------------------------------------
 	//std::srand(0); TO SEE ON MONDAY, explicitly fix the seed to guarantee reproducibility
 	C = A + 50.0 * Matrix::Random(height, width);
+	//C = (A + 50.0 * Matrix::Random(height, width)).cwiseMax(0.0).cwiseMin(255.0);  //TO SEE ON MONDAY (Should I clamp here?, if I do images are in fact labelled as modified)
 	image = toImage(C);
 	if (!saveImage("output_images/noisy_image.png", image, width, height)){return std::cerr << "Error: Could not save image\n", 1;}
 	std::cout << "Noisy image saved to noisy_image.png" << std::endl;

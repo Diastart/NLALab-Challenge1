@@ -56,7 +56,7 @@ SparseMatrix getSparseMatrixFromConv(int n, int m, const double convolution[9])
 		bool U = i >= m;
 		bool D = i < size - m;
 
-		triplets.emplace_back(i, i, convolution[4]);
+		if (convolution[4] != 0) triplets.emplace_back(i, i, convolution[4]);
 		if ((R) && convolution[5] != 0) triplets.emplace_back(i, i + 1, convolution[5]);
 		if ((L) && convolution[3] != 0) triplets.emplace_back(i, i - 1, convolution[3]);
 		if ((D) && convolution[7] != 0) triplets.emplace_back(i, i + m, convolution[7]);

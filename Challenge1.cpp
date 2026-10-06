@@ -128,6 +128,7 @@ int	main(int argc, char *argv[])
 {
 	int				width, height, channels;
 	unsigned char	*image_data;
+	SparseMatrix    I;
 	Matrix			A;
 	Matrix			C;
 	ImageMatrix		image;
@@ -219,8 +220,9 @@ int	main(int argc, char *argv[])
 	std::cout << "Edge dectected image saved to edge_detected_image.png" << std::endl;
 	//TASK 11 END------------------------------------------------------------------------------------------------------------
 	//TASK 12 START--------------------------------------------------------------------------
-	A3M = A3;
-	A3M.diagonal().array() += 4.0;
+	I.resize(A3.rows(), A3.cols());
+	I.setIdentity();
+	A3M = A3 + 4.0 * I;
 	Eigen::BiCGSTAB<SparseMatrix> solver;
 	solver.setTolerance(1e-10);
 	solver.compute(A3M);
